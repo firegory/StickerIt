@@ -1,25 +1,59 @@
 import sqlite3
 from telebot import TeleBot
 import re
-
-from PIL import Image
-import transformers
-from transformers import BlipProcessor, BlipForConditionalGeneration, T5ForConditionalGeneration, T5Tokenizer
-import numpy as np
 import os
-import re
-import pandas as pd
 import gc
 
-from tqdm.auto import tqdm
-tqdm.pandas()
-
 import torch
-torch.cuda.is_available()
+import numpy as np
+import pandas as pd
+from diffusers import DiffusionPipeline
+from peft import PeftModel, PeftConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Инициализация бота
 API_TOKEN = '7941892229:AAF5kEUQSRA9beUfn6PMn4-EhJRffx3VYoc'  # Замените на ваш токен API
 bot = TeleBot(API_TOKEN)
+
+
+MODEL_NAME = "IlyaGusev/saiga_mistral_7b"
+DEFAULT_MESSAGE_TEMPLATE = "<s>{role}\n{content}</s>"
+DEFAULT_SYSTEM_PROMPT = "Ты генерируешь по набору диалогов связный промпт для последующей генерации картинок"
+
+class Conversation:
+    def __init__(
+        self, messages,
+        message_template=DEFAULT_MESSAGE_TEMPLATE,
+    ):
+        self.message_template = message_template
+        self.messages = messages
+
+    def add_user_message(self, message):
+        self.messages.append({
+            "role": "user",
+            "content": message
+        })
+
+    def get_prompt(self, tokenizer):
+        final_text = ""
+        for message in self.messages:
+            message_text = self.message_template.format(**message)
+            final_text += message_text
+        return final_text.strip()
+
+
+def generate(model, tokenizer, prompt, generation_config):
+    data = tokenizer(prompt, return_tensors="pt", add_special_tokens=False)
+    data = {k: v.to(model.device) for k, v in data.items()}
+    output_ids = model.generate(
+        **data,
+        generation_config=generation_config
+    )[0]
+    output_ids = output_ids[len(data["input_ids"][0]):]
+    output = tokenizer.decode(output_ids, skip_special_tokens=True)
+    return output.strip()
 
 # Функция для очистки сообщения
 def clean_message(message):
@@ -116,11 +150,41 @@ def update_last_words(chat_id, chat_title, new_message, user_id):
 
 # инициализация моделей
 def model_init():
+    df = pd.read_csv('ReadBot\dataset.csv')
+    messages = [{"role": "system", "content": DEFAULT_SYSTEM_PROMPT}]
+    for i, row in df[:30].iterrows():
+        messages.append({"role": "user", "content": row['last_words']})
+        messages.append({"role": "bot", "content": row['caption']})
 
+    config = PeftConfig.from_pretrained(MODEL_NAME)
+    model = AutoModelForCausalLM.from_pretrained(
+        config.base_model_name_or_path,
+        torch_dtype=torch.float16,
+        device_map="auto"
+    )
+    model = PeftModel.from_pretrained(
+        model,
+        MODEL_NAME,
+        torch_dtype=torch.float16
+    )
+    model.eval()
+
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_fast=False)
+    generation_config = GenerationConfig.from_pretrained(MODEL_NAME)
+    return tokenizer, model, generation_config, messages 
 
 # Создаем базу данных при запуске скрипта
 create_database()
-model_init()
+tokenizer, model, generation_config, messages  = model_init()
+
+def make_pred(inp, tokenizer, model, generation_config, messages):
+    conversation = Conversation(messages)
+    conversation.add_user_message(inp)
+    prompt = conversation.get_prompt(tokenizer)
+
+    output = generate(model, tokenizer, prompt, generation_config)
+    return output
+
 
 # Обработчик команды для получения последних 200 слов
 @bot.message_handler(commands=['get_last_words'])
@@ -133,7 +197,10 @@ def get_last_words(message):
     row = c.fetchone()
 
     if row and row[0]:
-        bot.reply_to(message, f'Последние 200 слов чата:\n{row[0]}')
+        context = row[0]
+        res = make_pred(context, tokenizer, model, generation_config, messages)
+
+        bot.reply_to(message, f'Ваш готовый промпт для генерации  картинки:\n{res}')
     else:
         bot.reply_to(message, "Нет данных для этого чата.")
 
