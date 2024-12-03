@@ -2,6 +2,21 @@ import sqlite3
 from telebot import TeleBot
 import re
 
+from PIL import Image
+import transformers
+from transformers import BlipProcessor, BlipForConditionalGeneration, T5ForConditionalGeneration, T5Tokenizer
+import numpy as np
+import os
+import re
+import pandas as pd
+import gc
+
+from tqdm.auto import tqdm
+tqdm.pandas()
+
+import torch
+torch.cuda.is_available()
+
 # Инициализация бота
 API_TOKEN = '7941892229:AAF5kEUQSRA9beUfn6PMn4-EhJRffx3VYoc'  # Замените на ваш токен API
 bot = TeleBot(API_TOKEN)
@@ -99,8 +114,13 @@ def update_last_words(chat_id, chat_title, new_message, user_id):
     conn.commit()
     conn.close()
 
+# инициализация моделей
+def model_init():
+
+
 # Создаем базу данных при запуске скрипта
 create_database()
+model_init()
 
 # Обработчик команды для получения последних 200 слов
 @bot.message_handler(commands=['get_last_words'])
