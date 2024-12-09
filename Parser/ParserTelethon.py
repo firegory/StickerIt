@@ -12,7 +12,7 @@ api_id = int(os.getenv('api_id'))
 api_hash = os.getenv('api_hash')
 phone = os.getenv('phone')  # Укажите номер телефона с '+', например, +71234567890
 # Создаем клиент с указанным именем сессии
-client = TelegramClient('my_session_name', api_id, api_hash,device_model='NewLaptop',system_version="10.0 (Windows 11)")
+client = TelegramClient('session_name', api_id, api_hash,device_model='NewLaptop',system_version="10.0 (Windows 11)")
 mymessages=[]
 stickers_folder = 'stickers'
 os.makedirs(stickers_folder, exist_ok=True)
