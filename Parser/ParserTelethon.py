@@ -1,9 +1,8 @@
-import asyncio
 from dotenv import load_dotenv
 from time import sleep
 from telethon import TelegramClient
-from telethon.tl.types import *
 from telethon.tl.functions.messages import GetHistoryRequest
+from telethon.helpers import TotalList
 import re
 from fnmatch import fnmatch
 import csv
@@ -13,15 +12,15 @@ api_id = int(os.getenv('api_id'))
 api_hash = os.getenv('api_hash')
 phone = os.getenv('phone')  # Укажите номер телефона с '+', например, +71234567890
 # Создаем клиент с указанным именем сессии
-client = TelegramClient('session_name', api_id, api_hash,device_model='blabla',system_version="10.0 (Windows 11)")
+client = TelegramClient('my_session_name', api_id, api_hash,device_model='NewLaptop',system_version="10.0 (Windows 11)")
 mymessages=[]
 stickers_folder = 'stickers'
 os.makedirs(stickers_folder, exist_ok=True)
 
 #функция для предобработки полученных сообщений
-def preprocess_text(text):
+def preprocess_text(text:str):
     # Удаляем ссылки
-    link_pattern = re.compile(r'http[s]?://\S+|www\.\S+')
+    link_pattern = re.compile(r'https?://\S+|www\.\S+')
     text = link_pattern.sub('', text)
 
     # Удаляем эмодзи
@@ -49,7 +48,7 @@ def preprocess_text(text):
 #показывает доступные чаты и их id
 async def get_dialog():
     async with client:
-        dialogs=await client.get_dialogs()
+        dialogs:TotalList=await client.get_dialogs()
         print('доступные чаты')
         for dialog in dialogs:
             print((dialog.title,dialog.entity.id))
@@ -59,8 +58,9 @@ async def get_dialog():
 #расчитано на многократное количество запусков, каждый раз в отдельном файле
 #сохраняется информация про последнее полученное сообщение, так что можно продолжить
 #парсить с того же места, где закончили в прошлый раз(только для одного и того же чата работает)
-#чтобы начать парсить другие чаты удалите/перенесите в другую директорию (csv,stickers,txt файлики)
-async def parser(chat_id,max_messages:int):
+async def parser(chat_id:int,max_messages:int):
+    allmessages=[]
+
     file_path = "lastmessage_id.txt"
 
     if os.path.exists(file_path):  # Проверяем существование файла
@@ -88,42 +88,40 @@ async def parser(chat_id,max_messages:int):
                 min_id=0,
                 hash=0
             ))
-            for message in history.messages[::-1]:
-                if message.message:
-                    msg=message.message
-                    if message.from_id:  # Если от пользователя
-                        now_user = message.from_id.user_id
-                    elif message.peer_id and isinstance(message.peer_id,
-                                                        PeerUser):  # Если от пользователя (в контексте чата)
-                        now_user = message.peer_id.user_id
-                    else:
-                        now_user = 0  # В случае, если не удалось определить
-                    if len(preprocess_text(msg))==0:
-                        continue
-                    if now_user is not None and now_user != last_user_id and len(mymessagespart) != 0:
-                        last_user_id=now_user
-                        msg='\n-'+preprocess_text(msg)
-                        #print(msg,message.id)
-                    elif len(mymessagespart)==0:
-                        msg='-'+preprocess_text(msg)
+            allmessages.extend(history.messages)
+            sleep(1)
+            last_offset_id=history.messages[-1].id
+        for message in allmessages[::-1]:
+            if message.message:
+                msg=message.message
+                if message.from_id:  # Если от пользователя
+                    now_user = message.from_id.user_id
+                elif message.peer_id:  # Если от пользователя (в контексте чата)
+                    now_user = message.peer_id.user_id
+                else:
+                    now_user = 0  # В случае, если не удалось определить
+                if len(preprocess_text(msg))==0:
+                    continue
+                if now_user is not None and now_user != last_user_id and len(mymessagespart) != 0:
+                    last_user_id=now_user
+                    msg='\n-'+preprocess_text(msg)
+                    #print(msg,message.id)
+                elif len(mymessagespart)==0:
+                    msg='-'+preprocess_text(msg)
 
-                    else:
-                        msg = " "+preprocess_text(msg)
-                    mymessagespart.append(msg)
-                elif message.sticker:
-                    sticker_filename = f'sticker_{counter}.webp'
-                    counter += 1
-                    mymessagespart.append(sticker_filename)
-                    mymessages.extend(mymessagespart)
-                    mymessagespart=[]
-                    sticker_path = os.path.join(stickers_folder, sticker_filename)
-                    await client.download_media(message, file=sticker_path)
-            if len(history.messages)>0:
-                last_offset_id = history.messages[-1].id
-            else:
-                break
-            print(last_offset_id)
-            sleep(2)
+                else:
+                    msg = " "+preprocess_text(msg)
+                mymessagespart.append(msg)
+            elif message.sticker:
+                sticker_filename = f'sticker_{counter}.webp'
+                counter += 1
+                mymessagespart.append(sticker_filename)
+                mymessages.extend(mymessagespart)
+                mymessagespart=[]
+                sticker_path = os.path.join(stickers_folder, sticker_filename)
+                await client.download_media(message, file=sticker_path)
+        last_offset_id = allmessages[-1].id
+        print(last_offset_id)
         with open("lastmessage_id.txt", 'w') as file:
             file.write(str(last_offset_id)+'\n')
             file.write(str(counter)+'\n')
@@ -160,7 +158,6 @@ async def main():
                 last_words=" ".join(last_words.split(' ')[-500::])
                 last_words_list.append(last_words)
                 sticker_names_list.append(msg)
-                last_words=""
         else:
             last_words+=msg
     write_to_csv(sticker_names_list,last_words_list)
