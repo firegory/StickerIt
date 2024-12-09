@@ -8,23 +8,23 @@ from fnmatch import fnmatch
 import csv
 import os
 load_dotenv()
-api_id = int(os.getenv('api_id'))
-api_hash = os.getenv('api_hash')
-phone = os.getenv('phone')  # Укажите номер телефона с '+', например, +71234567890
+api_id:int = int(os.getenv('api_id'))
+api_hash:str = os.getenv('api_hash')
+phone:str = os.getenv('phone')  # Укажите номер телефона с '+', например, +71234567890
 # Создаем клиент с указанным именем сессии
-client = TelegramClient('session_name', api_id, api_hash,device_model='NewLaptop',system_version="10.0 (Windows 11)")
-mymessages=[]
-stickers_folder = 'stickers'
+client = TelegramClient('my_session_name', api_id, api_hash,device_model='NewLaptop',system_version="10.0 (Windows 11)")
+mymessages:list[str]=[]
+stickers_folder:str = 'stickers'
 os.makedirs(stickers_folder, exist_ok=True)
 
 #функция для предобработки полученных сообщений
 def preprocess_text(text:str):
     # Удаляем ссылки
-    link_pattern = re.compile(r'https?://\S+|www\.\S+')
+    link_pattern:re.Pattern = re.compile(r'https?://\S+|www\.\S+')
     text = link_pattern.sub('', text)
 
     # Удаляем эмодзи
-    emoji_pattern = re.compile(
+    emoji_pattern:re.Pattern = re.compile(
         "["
         "\U0001F600-\U0001F64F"  # Смiley
         "\U0001F300-\U0001F5FF"  # Symbols & Shapes
@@ -59,14 +59,14 @@ async def get_dialog():
 #сохраняется информация про последнее полученное сообщение, так что можно продолжить
 #парсить с того же места, где закончили в прошлый раз(только для одного и того же чата работает)
 async def parser(chat_id:int,max_messages:int):
-    allmessages=[]
+    allmessages:list=[]
 
-    file_path = "lastmessage_id.txt"
+    file_path:str = "lastmessage_id.txt"
 
     if os.path.exists(file_path):  # Проверяем существование файла
         with open(file_path, 'r') as file:  # Открываем файл для чтения
-            lines = file.readlines()  # Читаем все строки
-            lines=list(map(int,lines))
+            lines:list[str] = file.readlines()  # Читаем все строки
+            lines:list[int]=list(map(int,lines))
             last_offset_id,counter,last_user_id=lines
 
     else:
@@ -77,7 +77,6 @@ async def parser(chat_id:int,max_messages:int):
     async with client:
         chat=await client.get_entity(chat_id)
         for i in range(max_messages//100):
-            mymessagespart=[]
             history = await client(GetHistoryRequest(
                 peer=chat,
                 limit=100,
@@ -88,14 +87,18 @@ async def parser(chat_id:int,max_messages:int):
                 min_id=0,
                 hash=0
             ))
+            if len(history.messages)==0:
+                break
+            else:
+                last_offset_id=history.messages[-1].id
             allmessages.extend(history.messages)
             sleep(1)
-            last_offset_id=history.messages[-1].id
+        mymessagespart: list = []
         for message in allmessages[::-1]:
             if message.message:
-                msg=message.message
+                msg:str=message.message
                 if message.from_id:  # Если от пользователя
-                    now_user = message.from_id.user_id
+                    now_user:int = message.from_id.user_id
                 elif message.peer_id:  # Если от пользователя (в контексте чата)
                     now_user = message.peer_id.user_id
                 else:
@@ -120,7 +123,10 @@ async def parser(chat_id:int,max_messages:int):
                 mymessagespart=[]
                 sticker_path = os.path.join(stickers_folder, sticker_filename)
                 await client.download_media(message, file=sticker_path)
-        last_offset_id = allmessages[-1].id
+        if len(allmessages)==0:
+            print("ВСЁ")
+        else:
+            last_offset_id = allmessages[-1].id
         print(last_offset_id)
         with open("lastmessage_id.txt", 'w') as file:
             file.write(str(last_offset_id)+'\n')
@@ -147,7 +153,7 @@ async def main():
     await get_dialog()
     print("Введите id чата")
     chat_id=int(input())
-    max_messages=1000
+    max_messages:int=1000 #сколько сообщений из чата хотите получить(кратно 100)
     await parser(chat_id,max_messages)
     sticker_names_list=[]
     last_words_list=[]
@@ -155,7 +161,9 @@ async def main():
     for msg in mymessages:
         if fnmatch(msg,'sticker*.webp'):
             if len(last_words)>0:
+                last_words=last_words.replace('\n',' \n')
                 last_words=" ".join(last_words.split(' ')[-500::])
+                last_words=last_words.replace(' \n','\n')
                 last_words_list.append(last_words)
                 sticker_names_list.append(msg)
         else:
@@ -163,3 +171,7 @@ async def main():
     write_to_csv(sticker_names_list,last_words_list)
 if __name__ == "__main__":
     client.loop.run_until_complete(main())
+
+
+
+
