@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 from time import sleep
 from telethon import TelegramClient
 from telethon.tl.functions.messages import GetHistoryRequest
+from telethon.tl.types import DocumentAttributeVideo
 from telethon.helpers import TotalList
 import re
 from fnmatch import fnmatch
@@ -12,7 +13,7 @@ api_id:int = int(os.getenv('api_id'))
 api_hash:str = os.getenv('api_hash')
 phone:str = os.getenv('phone')  # Укажите номер телефона с '+', например, +71234567890
 # Создаем клиент с указанным именем сессии
-client = TelegramClient('my_session_name', api_id, api_hash,device_model='NewLaptop',system_version="10.0 (Windows 11)")
+client = TelegramClient('session_name', api_id, api_hash,device_model='NewLaptop',system_version="10.0 (Windows 11)")
 mymessages:list[str]=[]
 stickers_folder:str = 'stickers'
 os.makedirs(stickers_folder, exist_ok=True)
@@ -76,7 +77,8 @@ async def parser(chat_id:int,max_messages:int):
 
     async with client:
         chat=await client.get_entity(chat_id)
-        for i in range(max_messages//100):
+
+        for _ in range(max_messages//100):
             history = await client(GetHistoryRequest(
                 peer=chat,
                 limit=100,
@@ -116,13 +118,14 @@ async def parser(chat_id:int,max_messages:int):
                     msg = " "+preprocess_text(msg)
                 mymessagespart.append(msg)
             elif message.sticker:
-                sticker_filename = f'sticker_{counter}.webp'
-                counter += 1
-                mymessagespart.append(sticker_filename)
-                mymessages.extend(mymessagespart)
-                mymessagespart=[]
-                sticker_path = os.path.join(stickers_folder, sticker_filename)
-                await client.download_media(message, file=sticker_path)
+                if not any(isinstance(attr, DocumentAttributeVideo) for attr in message.sticker.attributes):
+                    sticker_filename = f'sticker_{counter}.webp'
+                    counter += 1
+                    mymessagespart.append(sticker_filename)
+                    mymessages.extend(mymessagespart)
+                    mymessagespart=[]
+                    sticker_path = os.path.join(stickers_folder, sticker_filename)
+                    await client.download_media(message, file=sticker_path)
         if len(allmessages)==0:
             print("ВСЁ")
         else:
@@ -171,7 +174,3 @@ async def main():
     write_to_csv(sticker_names_list,last_words_list)
 if __name__ == "__main__":
     client.loop.run_until_complete(main())
-
-
-
-
