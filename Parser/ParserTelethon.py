@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from time import sleep
 from telethon import TelegramClient
 from telethon.tl.functions.messages import GetHistoryRequest
-from telethon.tl.types import DocumentAttributeVideo
+from telethon.tl.types import DocumentAttributeVideo, DocumentAttributeFilename
 from telethon.helpers import TotalList
 import re
 from fnmatch import fnmatch
@@ -13,7 +13,7 @@ api_id:int = int(os.getenv('api_id'))
 api_hash:str = os.getenv('api_hash')
 phone:str = os.getenv('phone')  # Укажите номер телефона с '+', например, +71234567890
 # Создаем клиент с указанным именем сессии
-client = TelegramClient('session_name', api_id, api_hash,device_model='NewLaptop',system_version="10.0 (Windows 11)")
+client = TelegramClient('my_session_name', api_id, api_hash,device_model='NewLaptop',system_version="10.0 (Windows 11)")
 mymessages:list[str]=[]
 stickers_folder:str = 'stickers'
 os.makedirs(stickers_folder, exist_ok=True)
@@ -46,6 +46,8 @@ def preprocess_text(text:str):
     text = text.lower()
 
     return text.strip()  # Удаляем пробелы по краям текста
+
+
 #показывает доступные чаты и их id
 async def get_dialog():
     async with client:
@@ -53,7 +55,6 @@ async def get_dialog():
         print('доступные чаты')
         for dialog in dialogs:
             print((dialog.title,dialog.entity.id))
-
 
 #по id чата и макс кол-ву сообщ(должно быть кратно 100) получит эти сообщения из чата
 #расчитано на многократное количество запусков, каждый раз в отдельном файле
@@ -118,14 +119,20 @@ async def parser(chat_id:int,max_messages:int):
                     msg = " "+preprocess_text(msg)
                 mymessagespart.append(msg)
             elif message.sticker:
-                if not any(isinstance(attr, DocumentAttributeVideo) for attr in message.sticker.attributes):
-                    sticker_filename = f'sticker_{counter}.webp'
-                    counter += 1
-                    mymessagespart.append(sticker_filename)
-                    mymessages.extend(mymessagespart)
-                    mymessagespart=[]
-                    sticker_path = os.path.join(stickers_folder, sticker_filename)
-                    await client.download_media(message, file=sticker_path)
+                attr=message.sticker.attributes
+                for at in attr:
+                    if isinstance(at, DocumentAttributeFilename):
+                        file_name = at.file_name
+                        if file_name=='sticker.webp':
+                            sticker_filename = f'sticker_{counter}.webp'
+                            counter += 1
+                            mymessagespart.append(sticker_filename)
+                            mymessages.extend(mymessagespart)
+                            mymessagespart = []
+                            sticker_path = os.path.join(stickers_folder, sticker_filename)
+                            await client.download_media(message, file=sticker_path)
+
+
         if len(allmessages)==0:
             print("ВСЁ")
         else:
