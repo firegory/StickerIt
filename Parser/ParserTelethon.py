@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from time import sleep
 from telethon import TelegramClient
 from telethon.tl.functions.messages import GetHistoryRequest
-from telethon.tl.types import DocumentAttributeVideo, DocumentAttributeFilename
+from telethon.tl.types import DocumentAttributeFilename
 from telethon.helpers import TotalList
 import re
 from fnmatch import fnmatch
@@ -13,7 +13,7 @@ api_id:int = int(os.getenv('api_id'))
 api_hash:str = os.getenv('api_hash')
 phone:str = os.getenv('phone')  # Укажите номер телефона с '+', например, +71234567890
 # Создаем клиент с указанным именем сессии
-client = TelegramClient('my_session_name', api_id, api_hash,device_model='NewLaptop',system_version="10.0 (Windows 11)")
+client = TelegramClient('session_name', api_id, api_hash,device_model='NewLaptop',system_version="10.0 (Windows 11)")
 mymessages:list[str]=[]
 stickers_folder:str = 'stickers'
 os.makedirs(stickers_folder, exist_ok=True)
@@ -162,19 +162,31 @@ client.start()  # Подключаемся и аутентифицируемся
 async def main():
     await get_dialog()
     print("Введите id чата")
+    #chat_id =int(input()) при нескольких запусках для парсинга одного и того же чата можете указать напрямую
     chat_id=int(input())
-    max_messages:int=1000 #сколько сообщений из чата хотите получить(кратно 100)
+    max_messages:int=3000 #сколько сообщений из чата хотите получить(кратно 100)
     await parser(chat_id,max_messages)
     sticker_names_list=[]
     last_words_list=[]
-    last_words=""
+    last_words=''
     for msg in mymessages:
         if fnmatch(msg,'sticker*.webp'):
             if len(last_words)>0:
                 last_words=last_words.replace('\n',' \n')
-                last_words=" ".join(last_words.split(' ')[-500::])
-                last_words=last_words.replace(' \n','\n')
-                last_words_list.append(last_words)
+                last_words=last_words.split(' ')
+                len_last_words=0
+                new_last_words=[]
+                for ms in last_words[::-1]:
+                    if ms[:2]=='\n':
+                        len_last_words-=2
+                    len_last_words+=len(ms)
+                    new_last_words=[ms]+new_last_words
+                    if len_last_words>500:
+                        break
+                new_last_words=' '.join(new_last_words)
+                last_words = new_last_words
+                new_last_words=new_last_words.replace(' \n','\n')
+                last_words_list.append(new_last_words)
                 sticker_names_list.append(msg)
         else:
             last_words+=msg
