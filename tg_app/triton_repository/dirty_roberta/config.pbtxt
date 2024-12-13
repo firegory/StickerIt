@@ -1,0 +1,45 @@
+name: "dirty_roberta"
+backend: "onnxruntime"
+max_batch_size: 8
+input: [
+  {
+    name: "input_ids",
+    data_type: TYPE_INT64,
+    dims: [-1]
+  },
+  {
+    name: "attention_masks",
+    data_type: TYPE_INT64,
+    dims: [-1]
+  }
+]
+output: [
+  {
+    name: "outputs",
+    data_type: TYPE_FP32,
+    dims: [151]
+  }
+]
+
+dynamic_batching { }
+
+optimization { 
+    input_pinned_memory {
+        enable : true
+    },
+    output_pinned_memory {
+        enable : true
+    }
+    execution_accelerators {
+        gpu_execution_accelerator : [{
+            name : "tensorrt"
+            parameters { 
+                key: "precision_mode" 
+                value: "FP32"
+            }
+        }]
+        cpu_execution_accelerator : [ {
+            name : "openvino"
+        }]
+    } 
+}

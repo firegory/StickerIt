@@ -1,0 +1,22 @@
+services:
+  bot:
+    container_name: bot
+    build:
+      context: . 
+      dockerfile: dockerfiles/bot.Dockerfile
+    restart: on-failure
+    environment:
+      - TRITON_ADDRESS=triton:8000 
+      - PYTHONPATH="."
+    command: ["python3", "bot.py"]
+    depends_on:
+      - triton
+
+  triton:
+    container_name: triton
+    build:
+      context: .
+      dockerfile: dockerfiles/triton.Dockerfile
+    ports:
+      - "8000:8000"
+    command: ["tritonserver", "--model-repository=/triton_repository"]
