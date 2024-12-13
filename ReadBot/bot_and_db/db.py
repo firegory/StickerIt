@@ -42,3 +42,12 @@ async def update_messages(chat_id:int, chat_title:str, new_message:str, user_id:
                              (chat_title, existing_messages, user_id, chat_id))
         await db.commit()
     print("База данных обновлена")
+#функция для получения сообщений из определнного чата
+async def get_chat_messages_from_db(chat_id):
+    async with aiosqlite.connect('chat_messages.db') as db:
+        # Проверяем, существует ли запись для данного чата
+        async with db.execute("SELECT messages FROM chat_messages WHERE chat_id = ?", (chat_id,)) as cursor:
+            row = await cursor.fetchone()
+            messages = row[0]
+    return messages
+
