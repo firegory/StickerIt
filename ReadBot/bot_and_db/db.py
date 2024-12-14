@@ -1,6 +1,8 @@
+import aiosqlite
 from typing import Optional
 from asyncio import Lock
-import aiosqlite
+
+lock=Lock()
 
 # инициализация базы данных
 async def init_db() -> None:
@@ -16,7 +18,7 @@ async def init_db() -> None:
 
 # Функция для обновления сообщений в базе данных
 async def update_messages(chat_id:int, chat_title:str, new_message:str, user_id:int) -> None:
-    async with Lock():
+    async with lock:
         async with aiosqlite.connect('chat_messages.db') as db:
             # Проверяем, существует ли запись для данного чата
             async with db.execute("SELECT messages, last_user_id FROM chat_messages WHERE chat_id = ?",
@@ -53,6 +55,9 @@ async def get_chat_messages_from_db(chat_id:int) ->Optional[str]:
         # Проверяем, существует ли запись для данного чата
         async with db.execute("SELECT messages FROM chat_messages WHERE chat_id = ?", (chat_id,)) as cursor:
             row = await cursor.fetchone()
-            messages = row[0]
+            if row:
+                messages = row[0]
+            else:
+                messages=None
     return messages
 

@@ -21,7 +21,7 @@ stickers_folder:str = 'stickers'
 os.makedirs(stickers_folder, exist_ok=True)
 
 # показывает доступные чаты и их id
-async def get_dialog():
+async def get_dialog() -> None:
     async with client:
         dialogs:TotalList=await client.get_dialogs()
         print('доступные чаты')
@@ -32,7 +32,7 @@ async def get_dialog():
 # рассчитано на многократное количество запусков, каждый раз в отдельном файле
 # сохраняется информация про последнее полученное сообщение, так что можно продолжить
 # парсить с того же места, где закончили в прошлый раз(только для одного и того же чата)
-async def parser(chat_id:int,max_messages:int):
+async def parser(chat_id:int,max_messages:int)->None:
     allmessages:list=[]
 
     file_path:str = "lastmessage_id.txt"
