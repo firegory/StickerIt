@@ -6,7 +6,7 @@ from aiogram.filters import CommandStart,Command
 from db import init_db,update_messages,get_chat_messages_from_db
 from utils import preprocess_text
 load_dotenv()
-bot = Bot(token=getenv('TOKEN'))
+bot = Bot(token=getenv('API_TOKEN'))
 dp = Dispatcher()
 
 # обработчик команды /start
@@ -18,7 +18,7 @@ async def start_command(message: types.Message):
 @dp.message(Command("get_messages"))
 async  def get_messages(message:types.Message):
     chat_id = message.chat.id
-    messages=get_chat_messages_from_db(chat_id)
+    messages=await get_chat_messages_from_db(chat_id)
     if messages:
         await message.answer(messages)
     else:
