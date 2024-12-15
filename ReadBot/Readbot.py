@@ -1,15 +1,10 @@
 import sqlite3
 from telebot import TeleBot
 import re
-import os
-import gc
 
 import torch
 import numpy as np
 import pandas as pd
-from diffusers import DiffusionPipeline
-from peft import PeftModel, PeftConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
