@@ -132,7 +132,7 @@ async def main():
     await get_dialog()
     print("Введите id чата")
     #chat_id =int(input()) при нескольких запусках для парсинга одного и того же чата можете указать напрямую
-    chat_id=2151011041
+    chat_id=int(input())
     max_messages:int=1000 # сколько сообщений из чата хотите получить(кратно 100)
     await parser(chat_id,max_messages)
     sticker_names_list,last_words_list=get_columns(mymessages)
