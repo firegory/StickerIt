@@ -10,3 +10,8 @@
 ```!pip install unsloth
 !pip uninstall unsloth -y && pip install --upgrade --no-cache-dir --no-deps git+https://github.com/unslothai/unsloth.git
 !pip install -U bitsandbytes```
+
+## modal
+pip install modal
+python3 -m modal setup
+
