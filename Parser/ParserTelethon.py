@@ -1,10 +1,12 @@
-from asyncio import sleep
 from telethon import TelegramClient
 from telethon.tl.functions.messages import GetHistoryRequest
 from telethon.tl.types import DocumentAttributeFilename,PeerUser,PeerChannel
 from telethon.helpers import TotalList
+
+from asyncio import sleep
 from dotenv import load_dotenv
 import os
+
 from helper_func import preprocess_text, write_to_csv,get_columns
 
 # Загружаем переменные окружения из файла .env и авторизуемся
@@ -37,9 +39,9 @@ async def parser(chat_id:int,max_messages:int)->None:
 
     file_path:str = "lastmessage_id.txt"
 
-    if os.path.exists(file_path):  # Проверяем существование файла
-        with open(file_path, 'r') as file:  # Открываем файл для чтения
-            lines:list[str] = file.readlines()  # Читаем все строки
+    if os.path.exists(file_path):  # проверяем существование файла
+        with open(file_path, 'r') as file:  # открываем файл для чтения
+            lines:list[str] = file.readlines()
             lines:list[int]=list(map(int,lines))
             last_offset_id,counter=lines
 
@@ -97,8 +99,6 @@ async def parser(chat_id:int,max_messages:int)->None:
                 elif now_user not in [None,0,505]  and now_user != last_user_id:
                     last_user_id=now_user
                     msg='\n-'+preprocess_text(msg)
-                    if 'илья' in msg:
-                        print(msg,last_user_id,now_user)
                     #print(msg,message.id)
                 else:
                     msg = " "+preprocess_text(msg)
@@ -127,13 +127,12 @@ async def parser(chat_id:int,max_messages:int)->None:
             file.write(str(last_offset_id)+'\n')
             file.write(str(counter)+'\n')
 
-client.start()  # Подключаемся и аутентифицируемся
 
 async def main():
     await get_dialog()
     print("Введите id чата")
     #chat_id =int(input()) при нескольких запусках для парсинга одного и того же чата можете указать напрямую
-    chat_id=int(input())
+    chat_id=2151011041
     max_messages:int=1000 # сколько сообщений из чата хотите получить(кратно 100)
     await parser(chat_id,max_messages)
     sticker_names_list,last_words_list=get_columns(mymessages)

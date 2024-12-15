@@ -35,15 +35,16 @@ def preprocess_text(text:str):
 
 # получаем столбцы для записи потом в csv файл
 def get_columns(messages_we_have:list[str]):
-    sticker_names_list = []
-    last_words_list = []
-    last_words = ''
+    sticker_names_list:list[str] = []
+    last_words_list:list[str] = []
+    last_words:str = ''
     for msg in messages_we_have:
         if fnmatch(msg, 'sticker*.webp'):
             if len(last_words) > 0:
                 last_words = last_words.replace('\n', ' \n')
                 last_words = last_words.split(' ')
-                len_last_words = 0
+                last_words:list
+                len_last_words:int = 0
                 new_last_words = []
                 for ms in last_words[::-1]:
                     if ms[:2] == '\n':
@@ -64,7 +65,7 @@ def get_columns(messages_we_have:list[str]):
 # осуществляет запись/дозапись данных в csv файл
 def write_to_csv(stick_names_list:list,last_word_list:list):
     filename = 'output.csv'
-    mode = 'a' if os.path.exists(filename) else 'w'
+    mode:str = 'a' if os.path.exists(filename) else 'w'
     with open('output.csv', mode, newline='', encoding='utf-16') as csvfile:
         writer = csv.writer(csvfile)
 
