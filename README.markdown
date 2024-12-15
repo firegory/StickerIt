@@ -4,3 +4,9 @@
     * Собрать обновленный датасет: для каждого стикера из датасета (контекст сообщений | картинка) описание на русском (тк используется русскязычная модель Saiga-Mistal-7B-Lora)
     * Подаем в модель примеры и датасета (всего их 161) во время инференса, а также сам запрос - текущий контекст сообщений, желая получить подобный ответ в виде будущего промпта в модель text2image
     * Получили caption и генерируе по нему картинку, будующий стикер
+
+
+## how to install unsloth
+```!pip install unsloth
+!pip uninstall unsloth -y && pip install --upgrade --no-cache-dir --no-deps git+https://github.com/unslothai/unsloth.git
+!pip install -U bitsandbytes```
