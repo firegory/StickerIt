@@ -1,5 +1,7 @@
 from unsloth import FastLanguageModel
 import torch
+import gc
+
 
 class CaptionGenerator():
     def __init__(self,
@@ -43,6 +45,7 @@ class CaptionGenerator():
         response_index, end_index = generated_caption.find("Response:"), generated_caption.find("<|endoftext|>")
         extracted_text = generated_caption[response_index + len("Response:"):end_index].strip()
         
+        gc.collect()
         torch.cuda.empty_cache()
 
         return extracted_text

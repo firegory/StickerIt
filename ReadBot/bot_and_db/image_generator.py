@@ -1,6 +1,6 @@
 from diffusers import AutoPipelineForText2Image
 import torch
-from io import BytesIO
+import gc
 
 class ImageGenerator():
     def __init__(self,
@@ -16,6 +16,8 @@ class ImageGenerator():
         image = self.pipe(prompt=caption, negative_prompt=self.negative_prompt,
                           prior_guidance_scale=1.0,
                           height=self.height, width=self.width).images[0]
+
+        gc.collect()
         torch.cuda.empty_cache()
         
         save_path = f'{chat_id}_sticker.webp'
