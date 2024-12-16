@@ -24,18 +24,20 @@
 ![image](https://github.com/user-attachments/assets/f2060d7c-2433-4401-accf-b3b44ffea5e0)
 
 ## Содержание репозитория:
----: Parser         # Функционал парсинга датасета
----: ReadBot        # Основная логика работы бота
----: Preprocessing  # Ноутбуки по обучению модели и сбору датасета
+-  Parser         # Функционал парсинга датасета
+-  ReadBot        # Основная логика работы бота
+-  Preprocessing  # Ноутбуки по обучению модели и сбору датасета
 
 ## Installation
-* Склонируйте репозиторий ```git clone https://github.com/firegory/StickerIt.git```
+* Склонируйте репозиторий
+`git clone https://github.com/firegory/StickerIt.git`
 * Создайте виртуальное окружение, активируйте его
-```python -m venv .env
-  .evn/Scripts/activate```
+`python -m venv .env
+  .evn/Scripts/activate`
 * Установите необходимые библиотеки
-```cd StickerIt
-  pip install -r REadBot/bot_and_dp/requirements.txt```
+`cd StickerIt
+  pip install -r ReadBot/bot_and_dp/requirements.txt`
 * Создать файл .env, поместить в него токен вашего бота
 * Добавить бота в качестве участника любого чата и дать ему права администратора
-* Запустить бота ```python ReadBot/bot_and_dp/bot.py```
+* Запустить бота
+`python ReadBot/bot_and_dp/bot.py`
