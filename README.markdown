@@ -32,12 +32,12 @@
 * Склонируйте репозиторий
 `git clone https://github.com/firegory/StickerIt.git`
 * Создайте виртуальное окружение, активируйте его
-`python -m venv .env
-  .evn/Scripts/activate`
+`python -m venv .env`
+`.evn/Scripts/activate`
+  
 * Установите необходимые библиотеки
-`cd StickerIt
-  pip install -r ReadBot/bot_and_dp/requirements.txt`
+`cd StickerIt`
+`pip install -r ReadBot/bot_and_dp/requirements.txt`
 * Создать файл .env, поместить в него токен вашего бота
 * Добавить бота в качестве участника любого чата и дать ему права администратора
-* Запустить бота
-`python ReadBot/bot_and_dp/bot.py`
+* Запустить бота `python ReadBot/bot_and_dp/bot.py`
