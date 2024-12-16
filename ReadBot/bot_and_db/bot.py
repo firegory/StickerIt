@@ -3,7 +3,6 @@ from asyncio import run
 
 from dotenv import load_dotenv
 from os import getenv
-import logging
 
 from db_manager import init_db
 from handlers import router
