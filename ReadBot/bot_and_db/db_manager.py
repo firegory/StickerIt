@@ -50,7 +50,7 @@ async def update_messages(chat_id: int, chat_title: str, new_message: str, user_
                 await cursor.execute("UPDATE chat_messages SET chat_title = ?, messages = ?, last_user_id = ? WHERE chat_id = ?",
                                      (chat_title, messages, user_id, chat_id))
             await db.commit()
-        print("База данных обновлена")
+        # print("База данных обновлена")
 
 # функция для получения сообщений из определённого чата в БД
 async def get_chat_messages_from_db(chat_id: int) -> Optional[str]:

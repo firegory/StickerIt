@@ -17,6 +17,7 @@ class CaptionGenerator():
 
             ### Response:
             {}"""
+
         self.instruction = "based on the Russian dialogue from chat, generate a description in English for further generation of a sticker that would be best suited in this situation."
         self.model, self.tokenizer = FastLanguageModel.from_pretrained(
             model_name = model_name,
@@ -42,4 +43,6 @@ class CaptionGenerator():
         response_index, end_index = generated_caption.find("Response:"), generated_caption.find("<|endoftext|>")
         extracted_text = generated_caption[response_index + len("Response:"):end_index].strip()
         
+        torch.cuda.empty_cache()
+
         return extracted_text

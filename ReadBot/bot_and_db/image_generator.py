@@ -16,9 +16,9 @@ class ImageGenerator():
         image = self.pipe(prompt=caption, negative_prompt=self.negative_prompt,
                           prior_guidance_scale=1.0,
                           height=self.height, width=self.width).images[0]
+        torch.cuda.empty_cache()
         
-        save_path += f'./ouputs/{chat_id}_sticker.webp'
-        with open(save_path, "wb") as f:
-            image.save(image, "webp", quality=80)
+        save_path = f'{chat_id}_sticker.webp'
+        image.save(save_path)
 
         return save_path

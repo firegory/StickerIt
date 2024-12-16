@@ -10,11 +10,11 @@ from db_manager import update_messages,get_chat_messages_from_db
 from regex_patterns import preprocess_text
 
 router:Router=Router()
+image_model, text_model = ImageGenerator(), CaptionGenerator()
 
 # обработчик команды /start
 @router.message(CommandStart())
 async def start_command(message: types.Message) -> None:
-    image_model, text_model = ImageGenerator(), CaptionGenerator()
     await message.answer("Привет! Я бот для хранения сообщений чатов.")
 
 # обработчик команды /get_messages, возвращает пользователю сохраняемую в бд историю чата
@@ -27,7 +27,7 @@ async  def get_messages(message:types.Message) -> None:
     else:
         await message.answer('В данном чате сообщений не найдено')
 
-@router.message(Command("generate_image"))
+@router.message(Command("generate_sticker"))
 async def generate_image(message:types.Message):
     chat_id: int = message.chat.id
     context: Optional[str] = await get_chat_messages_from_db(chat_id)
@@ -39,16 +39,6 @@ async def generate_image(message:types.Message):
         await message.answer_sticker(sticker_file)
     else:
         await message.answer(f'Нет данных для этого!')
-
-# @router.message(Command("generate_sticker"))
-# async def generate_sticker(message:types.Message):
-#     sticker_path = "lol.webp"  # Путь к стикеру
-
-#     # Создаем экземпляр FSInputFile
-#     sticker_file = FSInputFile(sticker_path)
-
-#     # Отправка стикера пользователю
-#     await message.answer_sticker(sticker_file)
 
 # обработчик всех входящих текстовых сообщений, сохраняет их в базу данных
 @router.message(F.text)

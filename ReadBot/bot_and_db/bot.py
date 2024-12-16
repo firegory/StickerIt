@@ -19,7 +19,7 @@ async def main():
     await dp.start_polling(bot)  # Запуск бота
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    # logging.basicConfig(level=logging.INFO)
     try:
         run(main())
     except KeyboardInterrupt:
