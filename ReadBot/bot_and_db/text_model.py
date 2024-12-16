@@ -41,4 +41,5 @@ class CaptionGenerator():
         generated_caption = self.tokenizer.batch_decode(outputs)[0]
         response_index, end_index = generated_caption.find("Response:"), generated_caption.find("<|endoftext|>")
         extracted_text = generated_caption[response_index + len("Response:"):end_index].strip()
+        
         return extracted_text

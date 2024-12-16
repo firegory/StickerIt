@@ -3,18 +3,18 @@ from aiogram.types import FSInputFile
 from aiogram import Router,types,F
 from aiogram.filters import CommandStart,Command
 
-# from image_generator import ImageGenerator
-# from text_model import CaptionGenerator
+from image_generator import ImageGenerator
+from text_model import CaptionGenerator
 
 from db_manager import update_messages,get_chat_messages_from_db
 from regex_patterns import preprocess_text
 
-#image_model, text_model = ImageGenerator(), CaptionGenerator()
 router:Router=Router()
 
 # обработчик команды /start
 @router.message(CommandStart())
 async def start_command(message: types.Message) -> None:
+    image_model, text_model = ImageGenerator(), CaptionGenerator()
     await message.answer("Привет! Я бот для хранения сообщений чатов.")
 
 # обработчик команды /get_messages, возвращает пользователю сохраняемую в бд историю чата
@@ -32,21 +32,23 @@ async def generate_image(message:types.Message):
     chat_id: int = message.chat.id
     context: Optional[str] = await get_chat_messages_from_db(chat_id)
     if context:
-        #generated_caption = text_model.generate(context)
-        #generated_image = image_model.generate(generated_caption)
-        await message.answer(f'Ваш стикер готов!')
+        generated_caption = text_model.generate(context)
+        save_path = image_model.generate(generated_caption, chat_id)
+        sticker_file = FSInputFile(save_path)        
+        
+        await message.answer_sticker(sticker_file)
     else:
         await message.answer(f'Нет данных для этого!')
 
-@router.message(Command("generate_sticker"))
-async def generate_sticker(message:types.Message):
-    sticker_path = "lol.webp"  # Путь к стикеру
+# @router.message(Command("generate_sticker"))
+# async def generate_sticker(message:types.Message):
+#     sticker_path = "lol.webp"  # Путь к стикеру
 
-    # Создаем экземпляр FSInputFile
-    sticker_file = FSInputFile(sticker_path)
+#     # Создаем экземпляр FSInputFile
+#     sticker_file = FSInputFile(sticker_path)
 
-    # Отправка стикера пользователю
-    await message.answer_sticker(sticker_file)
+#     # Отправка стикера пользователю
+#     await message.answer_sticker(sticker_file)
 
 # обработчик всех входящих текстовых сообщений, сохраняет их в базу данных
 @router.message(F.text)
