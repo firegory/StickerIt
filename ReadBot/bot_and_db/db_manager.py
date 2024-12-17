@@ -2,6 +2,7 @@ import aiosqlite
 from typing import Optional
 from asyncio import Lock
 
+# создание экземпляра блокировки для синхронизации доступа к базе данных
 lock=Lock()
 
 # инициализация базы данных

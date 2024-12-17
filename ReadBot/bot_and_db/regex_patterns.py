@@ -1,5 +1,5 @@
 import re
-# Компилируем регулярные выражения
+# компилируем регулярные выражения
 link_pattern:re.Pattern= re.compile(r'https?://\S+|www\.\S+')
 emoji_pattern:re.Pattern = re.compile(
     "["
@@ -14,17 +14,19 @@ emoji_pattern:re.Pattern = re.compile(
     "]+", flags=re.UNICODE)
 
 #функция для предобработки полученных сообщений
-def preprocess_text(text:str):
-    # Удаляем ссылки
+def preprocess_text(text:str) -> str :
+    # удаляем==заменяем на пустую строку
+
+    # удаляем ссылки
     text = link_pattern.sub('', text)
 
-    # Удаляем эмодзи
+    # удаляем эмодзи
     text = emoji_pattern.sub('', text)
 
-    # Удаляем лишние пробелы
+    # удаляем лишние пробелы
     text = ' '.join(text.split())
 
-    # Приводим текст к нижнему регистру
+    # приводим текст к нижнему регистру
     text = text.lower()
 
-    return text.strip()  # Удаляем пробелы по краям текста
+    return text.strip()  # удаляем пробелы по краям текста

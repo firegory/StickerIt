@@ -1,9 +1,8 @@
 import re
 import csv
 import os
-from fnmatch import fnmatch
 
-# Компилируем регулярные выражения для поиска ссылок и эмодзи
+# компилируем регулярные выражения для поиска ссылок и эмодзи
 link_pattern:re.Pattern = re.compile(r'https?://\S+|www\.\S+')
 emoji_pattern:re.Pattern= re.compile(
     "["
@@ -19,19 +18,23 @@ emoji_pattern:re.Pattern= re.compile(
 
 # функция для предобработки полученных сообщений
 def preprocess_text(text:str):
-    # Удаляем ссылки
+    # удаляем == заменяем на пустую строку
+    # удаляем ссылки
     text = link_pattern.sub('', string=text)
 
-    # Удаляем эмодзи
+    # удаляем эмодзи
     text = emoji_pattern.sub('', text)
 
-    # Удаляем лишние пробелы
+    # удаляем лишние пробелы
     text = ' '.join(text.split())
 
-    # Приводим текст к нижнему регистру
+    # приводим текст к нижнему регистру
     text = text.lower()
 
-    return text.strip()  # Удаляем пробелы по краям текста
+    return text.strip()  # удаляем пробелы по краям текста
+
+# шаблон для файлов 'sticker*.webp', где * - одна или более цифр
+stick_pattern:re.Pattern=re.compile(r'sticker_\d+\.webp$')
 
 # получаем столбцы для записи потом в csv файл
 def get_columns(messages_we_have:list[str]):
@@ -39,7 +42,7 @@ def get_columns(messages_we_have:list[str]):
     last_words_list:list[str] = []
     last_words:str = ''
     for msg in messages_we_have:
-        if fnmatch(msg, 'sticker*.webp'):
+        if stick_pattern.match(msg):
             if len(last_words) > 0:
                 last_words = last_words.replace('\n', ' \n')
                 last_words = last_words.split(' ')
