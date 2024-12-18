@@ -7,7 +7,7 @@ class CaptionGenerator():
     def __init__(self,
                  max_seq_length: int=2048,
                  dtype=None, load_in_4bit: bool=True,
-                 model_name: str="Eka-Korn/Qwen-2.5_SFT_v3"):
+                 model_name: str="Eka-Korn/Qwen-2.5_SFT"):
 
         self.alpaca_prompt = """Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 
