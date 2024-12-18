@@ -15,7 +15,7 @@
 
 ## Создание датасета
 Для генерации описаний с спарсенным стикерам использовалась модель microsoft/Florence-2-base-ft. Она позволяет генерировать длинные и полные описания. Сохраняем датасет в виде пар context - caption
-[Датасет](https://huggingface.co/datasets/Eka-Korn/stickers_captioning_v2)
+> [Датасет](https://huggingface.co/datasets/Eka-Korn/stickers_captioning_v2)
 
 ## Обучение
 С помощью библиотек unsloth и trl дообучили на собранном датасете Qwen 2.5 7B на задачу генерации из контекстного окна (на русском) промпта (на английском)
