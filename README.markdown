@@ -19,7 +19,7 @@
 
 ## Обучение
 С помощью библиотек unsloth и trl дообучили на собранном датасете Qwen 2.5 7B на задачу генерации из контекстного окна (на русском) промпта (на английском)
-> [Обученная модель](https://huggingface.co/Eka-Korn/Qwen-2.5_SFT_v3)
+> [Обученная модель](https://huggingface.co/Eka-Korn/Qwen-2.5_SFT)
 
 ## Результат
 ![image](https://github.com/user-attachments/assets/f2060d7c-2433-4401-accf-b3b44ffea5e0)
